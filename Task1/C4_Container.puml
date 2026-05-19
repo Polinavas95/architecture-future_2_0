@@ -1,0 +1,70 @@
+@startuml
+title Целевая архитектура "Будущее 2.0" (через год)
+
+' === Пользователи ===
+actor "Оператор клиники" as operator
+actor "Врач" as doctor
+actor "Аналитик бизнес-подразделений" as analyst
+actor "Менеджер финтех-услуг" as fintech_manager
+
+' === Внешние системы ===
+actor "Фармацевтические компании" as pharma
+actor "Производитель электроники" as electronics
+
+' === Контейнеры (сервисы/приложения) ===
+component "Портал самообслуживания (BI)" as portal
+component "Каталог данных (Data Catalog)" as data_catalog
+component "Шина событий (Kafka)" as kafka
+component "Домен «Клиники»" as domain_clinics
+component "Домен «Медицинские данные» (изолирован)" as domain_medical
+component "Домен «Финтех»" as domain_fintech
+component "Домен «ИИ-сервисы»" as domain_ai
+component "Домен «Управление / Головной офис»" as domain_governance
+database "Data Lakehouse\n(Delta Lake / Iceberg on S3)" as data_lakehouse
+database "Legacy DWH (SQL Server 2008)\nвременное хранение" as legacy_dwh
+
+' === Связи ===
+operator --> domain_clinics : "Записывает пациентов, смотрит инвентарь\n[HTTPS]"
+doctor --> domain_medical : "Работает с картами и снимками\n[HTTPS + RBAC]"
+analyst --> portal : "Формирует отчёты по KPI\n[HTTPS]"
+fintech_manager --> portal : "Анализирует кредитный портфель\n[HTTPS]"
+
+domain_clinics --> kafka : "Публикует события (новый пациент, запись, счёт)\n[events]"
+domain_fintech --> kafka : "Публикует финансовые транзакции\n[events]"
+domain_ai --> domain_medical : "Читает обезличенные исследования\n[gRPC, маскировка]"
+domain_ai --> kafka : "Публикует результаты диагнозов\n[ID пациента + код]"
+
+kafka --> data_lakehouse : "Потребление событий, построение озера\n[CDC + Kafka Connect]"
+domain_governance --> data_lakehouse : "Строит агрегированные витрины через dbt\n[SQL / Trino]"
+portal --> domain_governance : "Запросы к витринам\n[SQL / REST]"
+portal --> data_catalog : "Поиск доступных дата-продуктов\n[API]"
+
+pharma --> kafka : "Интеграция рецептов и поставок\n[внешний Kafka-мост, events]"
+electronics --> kafka : "Поток телеметрии с устройств\n[events]"
+
+' === Аннотации бизнес-сценариев (без привязки к элементам) ===
+note right of portal
+  <b>Сценарий 1: Быстрая отчётность</b>
+  Аналитик через портал получает агрегаты
+  за секунды (витрины в Lakehouse)
+end note
+
+note right of kafka
+  <b>Сценарий 2: Независимое развитие финтех и ИИ</b>
+  Каждый домен управляет своими данными,
+  общаются через события
+end note
+
+note bottom of pharma
+  <b>Сценарий 3: Масштабирование для новых бизнесов</b>
+  Подключение фармы/электроники через Kafka
+  без изменений в DWH
+end note
+
+note bottom of domain_medical
+  <b>Сценарий 4: Безопасность медданных</b>
+  Домен Medical изолирован,
+  не виден в портале
+end note
+
+@enduml
