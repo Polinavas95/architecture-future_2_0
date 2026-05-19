@@ -1,13 +1,17 @@
 @startuml
 title Целевая архитектура "Будущее 2.0" (через год)
 
+' === Пользователи ===
 actor "Оператор клиники" as operator
 actor "Врач" as doctor
 actor "Аналитик бизнес-подразделений" as analyst
 actor "Менеджер финтех-услуг" as fintech_manager
+
+' === Внешние системы ===
 actor "Фармацевтические компании" as pharma
 actor "Производитель электроники" as electronics
 
+' === Контейнеры (сервисы/приложения) ===
 component "Портал самообслуживания (BI)" as portal
 component "Каталог данных (Data Catalog)" as data_catalog
 component "Шина событий (Kafka)" as kafka
@@ -19,6 +23,7 @@ component "Домен «Управление / Головной офис»" as d
 database "Data Lakehouse\n(Delta Lake / Iceberg on S3)" as data_lakehouse
 database "Legacy DWH (SQL Server 2008)\nвременное хранение" as legacy_dwh
 
+' === Связи ===
 operator --> domain_clinics : "Записывает пациентов, смотрит инвентарь\n[HTTPS]"
 doctor --> domain_medical : "Работает с картами и снимками\n[HTTPS + RBAC]"
 analyst --> portal : "Формирует отчёты по KPI\n[HTTPS]"
