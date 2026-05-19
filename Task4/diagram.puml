@@ -1,0 +1,69 @@
+@startuml
+title Диаграмма автоматизации развёртывания (Terraform vs Manual)
+
+skinparam component {
+  BackgroundColor Terraform #90EE90
+  BackgroundColor Manual #FFB6C1
+  BorderColor Black
+}
+
+package "Terraform (автоматизация)" #LightGreen {
+
+  component "VPC (сеть)" as vpc
+  component "Subnet public" as subnet_pub
+  component "Subnet private" as subnet_priv
+  component "NAT Gateway" as nat
+  component "Route Tables" as rt
+
+  component "VM app (2 vCPU, 4GB RAM)" as vm_app
+  component "Boot Disk (20GB HDD)" as boot_disk
+  component "Data Disk (100GB SSD)" as data_disk
+
+  component "Managed PostgreSQL\n(2 vCPU, 8GB RAM, 50GB SSD)" as db
+
+  component "Security Group" as sg
+  component "Service Account" as sa
+  component "Bucket для state-файлов" as bucket
+
+}
+
+package "Manual (вручную / после apply)" #LightPink {
+
+  component "Приложение (Docker контейнер)" as app_container
+  component "База данных (схемы, пользователи)" as db_schema
+  component "Backup скрипты" as backup_scripts
+  component "Мониторинг (Prometheus + Grafana)" as monitoring
+
+}
+
+vpc --> subnet_pub : "содержит"
+vpc --> subnet_priv : "содержит"
+subnet_pub --> nat : "выход в интернет"
+subnet_priv <-- nat : "маршрут по умолчанию"
+
+vm_app --> subnet_pub : "подключена"
+vm_app --> boot_disk : "монтирован"
+vm_app --> data_disk : "монтирован"
+vm_app --> sg : "защищена"
+
+db --> subnet_priv : "подключена"
+db --> sg : "защищена"
+
+sa --> vm_app : "роль для доступа"
+sa --> db : "роль для доступа"
+
+bucket --> "Terraform state" : "хранение"
+
+app_container ..> vm_app : "разворачивается вручную\n(Ansible / SSH)"
+db_schema ..> db : "создаётся вручную\n(миграции)"
+backup_scripts ..> vm_app : "настраивается вручную"
+monitoring ..> vm_app : "настраивается вручную"
+monitoring ..> db : "настраивается вручную"
+
+note right of bucket
+  <b>Terraform State в бакете</b>
+  - Удалённое хранение
+  - Lock для команды
+end note
+
+@enduml

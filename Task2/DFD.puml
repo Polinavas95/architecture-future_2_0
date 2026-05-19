@@ -1,0 +1,65 @@
+@startuml
+title Data Flow Diagram: Потоки данных между доменами
+
+actor "Врач" as doctor
+actor "Оператор" as operator
+actor "Пациент" as patient
+actor "Фарм-компания" as pharma
+actor "Производитель электроники" as electronics
+
+rectangle "Домен «Клиники»" as clinics {
+    database "БД" as clinics_db
+}
+
+rectangle "Домен «Медицинские данные»" as medical {
+    database "Хранилище снимков\nи карт" as medical_db
+}
+
+rectangle "Домен «Финтех»" as fintech {
+    database "Фин ядро" as fintech_db
+}
+
+rectangle "Домен «ИИ-сервисы»" as ai {
+    component "ML-модели" as ml_models
+    database "Результаты\nмоделей" as ai_results
+}
+
+rectangle "Домен «Управление»" as governance {
+    database "Агрегированные\nвитрины" as governance_db
+}
+
+rectangle "Домен «Партнёры»" as partners {
+    database "Буфер\nвнешних данных" as partners_buffer
+}
+
+queue "Kafka\n(Event Bus)" as kafka
+
+operator --> clinics : "Запись, инвентарь, счета"
+clinics --> kafka : "Событие: пациент создан\n[ID, демография, сумма счета]"
+clinics --> kafka : "Событие: запись к врачу\n[ID пациента, время, услуга]"
+
+doctor --> medical : "Чтение/запись карты"
+medical --> ai : "Обезличенные снимки\n[по запросу, gRPC]"
+ai --> medical : "Результат диагноза\n[ID пациента, код диагноза, достоверность]"
+ai --> kafka : "Событие: диагноз поставлен\n[ID пациента, код, метаданные]"
+
+clinics --> fintech : "Запрос кредитной истории\n[ID пациента, сумма] (синхронно)"
+fintech --> clinics : "Решение: одобрен/отклонён"
+fintech --> kafka : "Событие: выдан кредит\n[ID пациента, сумма, ставка]"
+fintech --> governance : "Фин отчётность\n[агрегаты]"
+
+kafka --> governance : "Подписка на все доменные события"
+governance --> "Дашборды BI" : "KPI по клиникам, финансам"
+
+pharma --> partners_buffer : "Данные о поставках\n(собственный формат)"
+electronics --> partners_buffer : "Телеметрия устройств"
+partners_buffer --> kafka : "Нормализованные события\no поставках, показаниях"
+
+note right of medical
+  <b>Важно:</b>
+  Медицинские карты и снимки
+  не поступают в Kafka
+  и в домен Управления
+end note
+
+@enduml
