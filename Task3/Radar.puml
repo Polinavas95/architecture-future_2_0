@@ -1,0 +1,48 @@
+@startuml
+title Технологический радар "Будущее 2.0"
+
+rectangle "Adopt" as adopt #LightGreen
+rectangle "Trial" as trial #LightBlue
+rectangle "Assess" as assess #LightYellow
+rectangle "Hold" as hold #LightPink
+
+note right of adopt
+  <b>Apache Kafka</b> – Событийная интеграция доменов
+  <b>Delta Lake / Iceberg</b> – Открытые форматы для Lakehouse
+  <b>dbt</b> – Трансформации вне DWH, управляемые витрины
+  <b>Trino / Starburst</b> – Федеративные запросы к Lakehouse
+  <b>Superset / Power BI</b> – Создание портала самообслуживания
+  <b>Kubernetes</b> – Оркестрация микросервисов доменов
+  <b>Debezium</b> – CDC из legacy DWH и оперативных БД
+  <b>OpenTelemetry</b> – Возможность наблюдать потоки данных
+end note
+
+note right of trial
+  <b>Data Mesh</b> – Доменная архитектура данных (методология)
+  <b>Apache Iceberg + Nessie</b> – Версионирование данных
+  <b>MLflow</b> – Управление моделями для ИИ-домена
+  <b>Apache Flink / ksqlDB</b> – Real-time аналитика на потоках
+  <b>Open Policy Agent (OPA)</b> – Динамическое управление доступом
+  <b>DataHub / Amundsen</b> – Каталог данных
+  <b>Great Expectations</b> – Качество данных на границах доменов
+end note
+
+note right of assess
+  <b>FHIR (HL7) стандарт</b> – Обмен медицинскими данными с партнёрами
+  <b>ISO 20022</b> – Стандарт финансовых сообщений
+  <b>WebAssembly (Wasm)</b> – Легковесные трансформации в edge
+  <b>Vector database (Pinecone/Milvus)</b> – Поиск по снимкам для ИИ
+  <b>Apache Pulsar</b> – Альтернатива Kafka для GEO-распределённых сценариев
+  <b>Data Contracts</b> – Контракты между доменами
+end note
+
+note right of hold
+  <b>Проприетарные DWH (Snowflake, Synapse)</b> – Высокая стоимость, привязка к вендору
+  <b>Lambda Architecture</b> – Избыточно для 90% сценариев
+  <b>Blockchain для данных пациентов</b> – Отсутствие бизнес-ценности
+  <b>PowerBuilder</b> – Вывод из эксплуатации
+  <b>SQL Server 2008 как DWH</b> – Вывод из эксплуатации
+  <b>ESB Camel</b> – Вывод из эксплуатации
+end note
+
+@enduml
