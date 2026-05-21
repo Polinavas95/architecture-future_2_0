@@ -42,6 +42,14 @@ portal --> data_catalog : "Поиск доступных дата-продукт
 pharma --> kafka : "Интеграция рецептов и поставок\n[внешний Kafka-мост, events]"
 electronics --> kafka : "Поток телеметрии с устройств\n[events]"
 
+note right of kafka
+  <b>Kafka как транспорт событий</b>
+  Трансформации → Kafka Streams / домены
+  Ретраи/DLQ → consumer-сервисы
+  Синхронные вызовы → прямой gRPC/REST
+  ESB выводится (остаётся временно)
+end note
+
 note right of portal
   <b>Сценарий 1: Быстрая отчётность</b>
   Аналитик через портал получает агрегаты
